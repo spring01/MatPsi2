@@ -52,7 +52,7 @@ protected:
     void jk_DFException(std::string functionName);
     
 public:
-    // constructor; takes in 2 strings and parse them 
+    // constructor
     MatPsi2(SharedMatrix cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
