@@ -21,8 +21,6 @@ using namespace boost;
 
 class MatPsi2 {
 protected:
-    
-    std::string basisname_;
 
     Process::Environment process_environment_;
     boost::shared_ptr<LocalCommWrapper> worldcomm_;
@@ -86,7 +84,7 @@ public:
     
     
     //*** Basis set properties 
-    std::string& BasisSet_Name() { return basisname_; } // basis set name string 
+    const std::string& BasisSet_Name() { return basis_->name(); } // basis set name string 
     void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
     int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 

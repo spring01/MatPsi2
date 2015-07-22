@@ -39,7 +39,6 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
 
 // Constructor
 MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path)
-    : basisname_(basisname)
 {
     // some necessary initializations
     process_environment_.initialize();
@@ -66,7 +65,7 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     // create molecule object and set its basis set name 
     molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, cartesian, charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
-    molecule_->set_basis_all_atoms(basisname_);
+    molecule_->set_basis_all_atoms(basisname);
     process_environment_.set_molecule(molecule_);
     
     // create basis object and one & two electron integral factories & rhf 
@@ -210,8 +209,7 @@ void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
     psio_->_psio_manager_->psiclean();
     jk_.reset();
     
-    basisname_ = basisname;
-    molecule_->set_basis_all_atoms(basisname_);
+    molecule_->set_basis_all_atoms(basisname);
     
     // create basis object and one & two electron integral factories & rhf 
     create_basis_and_integral_factories();
@@ -489,7 +487,7 @@ void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
         molecule_->set_basis_all_atoms(auxBasisName, "DF_BASIS_SCF");
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(process_environment_, parser, molecule_, "DF_BASIS_SCF");
         jk_ = boost::shared_ptr<JK>(new DFJK(process_environment_, basis_, auxiliary, psio_));
-        molecule_->set_basis_all_atoms(basisname_);
+        molecule_->set_basis_all_atoms(basis_->name());
     } else if(jktype == "ICJK") {
         jk_ = boost::shared_ptr<JK>(new ICJK(process_environment_, basis_));
     } else if(jktype == "DIRECTJK") {
