@@ -286,6 +286,10 @@ void Molecule::add_atom(int Z, double x, double y, double z,
 {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
+    
+    // this line fixes the seemingly unit bug; added by spring
+    temp = temp * input_units_to_au_;
+    
     std::string l(label);
 
     if (atom_at_position2(temp) == -1) {
