@@ -142,6 +142,7 @@ void MatPsi2::Molecule_Free() {
     molecule_->set_reinterpret_coordentry(true);
     molecule_->activate_all_fragments(); // a trick to set lock_frame_ = false;
     molecule_->update_geometry();
+    molecule_->set_point_group(boost::shared_ptr<PointGroup>(new PointGroup("C1")));
 }
 
 void MatPsi2::Molecule_SetGeometry(SharedMatrix newGeom) {
