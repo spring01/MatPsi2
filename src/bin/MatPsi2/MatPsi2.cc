@@ -59,8 +59,7 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     Wavefunction::initialize_singletons();
     
     // initialize psio 
-    psio_ = boost::shared_ptr<PSIO>(new PSIO);
-    process_environment_.set_psio(psio_);
+    create_psio();
     
     // create molecule object and set its basis set name 
     molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, cartesian, charge, multiplicity);
@@ -87,19 +86,19 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
 
-void MatPsi2::create_basis() {
+void MatPsi2::create_psio() {
+    psio_ = boost::shared_ptr<PSIO>(new PSIO);
+    process_environment_.set_psio(psio_);
+}
+
+void MatPsi2::create_basis_and_integral_factories() {
+    
     // create basis object 
     boost::shared_ptr<PointGroup> c1group(new PointGroup("C1"));
     molecule_->set_point_group(c1group); 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basis_ = BasisSet::construct(process_environment_, parser, molecule_, "BASIS");  
-    
     molecule_->set_point_group(c1group); // creating basis set object change molecule's point group, for some reasons 
-}
-
-void MatPsi2::create_basis_and_integral_factories() {
-    
-    create_basis();
     
     // create integral factory object 
     intfac_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basis_, basis_, basis_, basis_));
@@ -165,8 +164,12 @@ void MatPsi2::Molecule_SetGeometry(SharedMatrix newGeom) {
     // update other objects 
     if(jk_ != NULL)
         jk_->finalize();
-    psio_->_psio_manager_->psiclean();
     jk_.reset();
+    wfn_.reset();
+    
+    // re-initialize psio 
+    create_psio();
+    
     create_basis_and_integral_factories();
 }
 
@@ -187,38 +190,11 @@ int MatPsi2::Molecule_NumElectrons() {
     return nelectron;
 }
 
-void MatPsi2::Molecule_SetChargeMult(int charge, int mult) {
-    SharedVector charge_mult = Molecule_ChargeMult();
-    int nelectron = Molecule_NumElectrons() + charge_mult->get(0) - charge;
-    if(mult - 1 > nelectron || mult%2 == nelectron%2){
-        throw PSIEXCEPTION("Molecule_SetChargeMult: Charge and Multiplicity are not compatible.");
-    }
-    molecule_->set_molecular_charge(charge);
-    molecule_->set_multiplicity(mult);
-}
-
 SharedVector MatPsi2::Molecule_ChargeMult() {
     SharedVector charge_mult(new Vector(2));
     charge_mult->set(0, (double)molecule_->molecular_charge());
     charge_mult->set(1, (double)molecule_->multiplicity());
     return charge_mult;
-}
-
-void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
-    if(jk_ != NULL)
-        jk_->finalize();
-    psio_->_psio_manager_->psiclean();
-    jk_.reset();
-    
-    molecule_->set_basis_all_atoms(basisname);
-    
-    // create basis object and one & two electron integral factories & rhf 
-    create_basis_and_integral_factories();
-    
-    // create matrix factory object 
-    int nbf[] = { basis_->nbf() };
-    matfac_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
-    matfac_->init_with(1, nbf, nbf);
 }
 
 SharedVector MatPsi2::BasisSet_ShellTypes() {
@@ -657,9 +633,12 @@ void MatPsi2::SCF_SetSCFType(std::string scfType) {
     process_environment_.options.set_global_str("GUESS", "CORE");
 }
 
-void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrb) {
+void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrbAlpha, SharedMatrix guessOrbBeta) {
     process_environment_.options.set_global_str("GUESS", "ORBITAL");
-    guessOrbital_ = guessOrb;
+    guessOrbital_.clear();
+    guessOrbital_.push_back(guessOrbAlpha);
+    if(guessOrbBeta != NULL)
+        guessOrbital_.push_back(guessOrbBeta);
 }
 
 void MatPsi2::create_wfn() {
@@ -765,13 +744,6 @@ SharedMatrix MatPsi2::SCF_DensityBeta() {
         SCF_RunSCF();
     }
     return wfn_->Db(); 
-}
-
-SharedMatrix MatPsi2::SCF_CoreHamiltonian() {
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->H(); 
 }
 
 SharedMatrix MatPsi2::SCF_FockAlpha() { 

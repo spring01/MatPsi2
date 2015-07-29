@@ -36,10 +36,10 @@ protected:
     boost::shared_ptr<VBase> dftPotential_;
     boost::shared_ptr<scf::HF> wfn_;
     
-    SharedMatrix guessOrbital_;
+    std::vector<SharedMatrix> guessOrbital_;
     
-    // create basis object 
-    void create_basis();
+    // create psio object 
+    void create_psio();
     
     // create basis object and one & two electron integral factories 
     void create_basis_and_integral_factories();
@@ -75,7 +75,6 @@ public:
     void Molecule_SetGeometry(SharedMatrix newGeom); // set a new geometry in Bohr 
     double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
     SharedVector Molecule_AtomicNumbers(); // atomic number list vector 
-    void Molecule_SetChargeMult(int charge, int mult);
     SharedVector Molecule_ChargeMult();
     
     //*** Molecule operations 
@@ -85,7 +84,6 @@ public:
     
     //*** Basis set properties 
     const std::string& BasisSet_Name() { return basis_->name(); } // basis set name string 
-    void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
     int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 
     int BasisSet_NumShells() { return basis_->nshell(); }
@@ -146,7 +144,7 @@ public:
     //*** SCF related
     // method of doing RHF calculations 
     void SCF_SetSCFType(std::string scfType);
-    void SCF_SetGuessOrb(SharedMatrix guessOrb);
+    void SCF_SetGuessOrb(SharedMatrix, SharedMatrix = SharedMatrix());
     double SCF_RunSCF();
     
     // methods controlling RHF algorithm 

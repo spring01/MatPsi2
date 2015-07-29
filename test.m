@@ -5,6 +5,7 @@ cart = [ ...
     1 0.0 0.0 1.0;
     1 0.0 1.0 0.0;];
 matpsi = MatPsi2(cart, '6-31g*');
+matpsi3 = MatPsi2(cart, '6-31g*', 0, 3);
 
 % Settings
 matpsi.Settings_SetMaxNumCPUCores(4);
@@ -24,11 +25,9 @@ geom = matpsi.Molecule_Geometry();
 matpsi.Molecule_SetGeometry(geom + 1);
 atomNums = matpsi.Molecule_AtomicNumbers();
 matpsi.Molecule_NucRepEnergy();
-matpsi.Molecule_SetChargeMult(0,1);
 
 % BasisSet
 matpsi.BasisSet_Name();
-matpsi.BasisSet_SetBasisSet('6-31g')
 matpsi.BasisSet_IsSpherical();
 matpsi.BasisSet_NumFunctions();
 matpsi.BasisSet_NumShells();
@@ -100,12 +99,10 @@ matpsi.JK_OccOrbToK(testMat, testMat);
 matpsi.DFT_Initialize('b3lyp');
 matpsi.DFT_DensToV(testMat);
 matpsi.DFT_EnergyXC();
-matpsi.Molecule_SetChargeMult(1,2);
-matpsi.SCF_SetSCFType('uks');
-matpsi.DFT_Initialize('b3lyp');
-matpsi.DFT_DensToV(testMat, testMat);
-matpsi.DFT_EnergyXC();
-matpsi.Molecule_SetChargeMult(0,1);
+matpsi3.SCF_SetSCFType('uks');
+matpsi3.DFT_Initialize('b3lyp');
+matpsi3.DFT_DensToV(testMat, testMat);
+matpsi3.DFT_EnergyXC();
 matpsi.SCF_SetSCFType('rhf');
 
 % SCF
@@ -113,17 +110,15 @@ matpsi.SCF_RunSCF();
 orb = matpsi.SCF_OrbitalAlpha();
 matpsi.SCF_SetSCFType('rks');
 matpsi.SCF_RunSCF();
-matpsi.SCF_SetSCFType('uhf');
-matpsi.SCF_RunSCF();
-matpsi.SCF_SetSCFType('uks');
-matpsi.SCF_RunSCF();
-matpsi.Molecule_SetChargeMult(1,2);
-matpsi.Molecule_ChargeMult();
-matpsi.SCF_SetSCFType('uhf');
-matpsi.SCF_RunSCF();
-matpsi.SCF_SetSCFType('uks');
-matpsi.SCF_RunSCF();
-matpsi.Molecule_SetChargeMult(0,1);
+matpsi3.SCF_SetSCFType('uhf');
+matpsi3.SCF_RunSCF();
+matpsi3.SCF_SetSCFType('uks');
+matpsi3.SCF_RunSCF();
+matpsi3.SCF_SetSCFType('uhf');
+matpsi3.SCF_RunSCF();
+matpsi3.SCF_SetSCFType('uks');
+matpsi.SCF_SetGuessOrb(orb, orb);
+matpsi3.SCF_RunSCF();
 matpsi.SCF_SetSCFType('rhf');
 matpsi.SCF_SetGuessOrb(orb);
 matpsi.SCF_RunSCF();
@@ -142,7 +137,6 @@ matpsi.SCF_OrbEigValAlpha();
 matpsi.SCF_OrbEigValBeta();
 matpsi.SCF_DensityAlpha();
 matpsi.SCF_DensityBeta();
-matpsi.SCF_CoreHamiltonian();
 matpsi.SCF_FockAlpha();
 matpsi.SCF_FockBeta();
 matpsi.SCF_Gradient();

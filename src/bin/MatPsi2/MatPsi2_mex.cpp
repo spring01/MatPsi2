@@ -189,12 +189,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputScalar(plhs[0], MatPsi_obj->Molecule_NucRepEnergy());
         return;
     }
-    if (!strcmp("Molecule_SetChargeMult", cmd)) {
-        if ( nrhs!=4 || !mxIsDouble(prhs[2]) || !mxIsDouble(prhs[3]))
-            mexErrMsgTxt("Molecule_SetChargeMult(charge, mult): 2 integers input expected.");
-        MatPsi_obj->Molecule_SetChargeMult((int)InputScalar(prhs[2]), (int)InputScalar(prhs[3]));
-        return;
-    }
     if (!strcmp("Molecule_ChargeMult", cmd)) {
         OutputVector(plhs[0], MatPsi_obj->Molecule_ChargeMult());
         return;
@@ -203,12 +197,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     //*** BasisSet 
     if (!strcmp("BasisSet_Name", cmd)) {
         plhs[0] = mxCreateString((MatPsi_obj->BasisSet_Name()).c_str());
-        return;
-    }
-    if (!strcmp("BasisSet_SetBasisSet", cmd)) {
-        if ( nrhs!=3 || !mxIsChar(prhs[2]))
-            mexErrMsgTxt("BasisSet_SetBasisSet(\"basis\"): String input expected.");
-        MatPsi_obj->BasisSet_SetBasisSet((std::string)mxArrayToString(prhs[2]));
         return;
     }
     if (!strcmp("BasisSet_IsSpherical", cmd)) {
@@ -491,12 +479,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     if (!strcmp("SCF_SetGuessOrb", cmd)) {
         // Check parameters
-        if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            mexErrMsgTxt("SCF_SetGuessOrb(orbital): nbf by nbf matrix input expected.");
-        // Call the method
-        MatPsi_obj->SCF_SetGuessOrb(InputMatrix(prhs[2]));
+        if (nrhs==3 && mxGetM(prhs[2]) == nbf)
+            MatPsi_obj->SCF_SetGuessOrb(InputMatrix(prhs[2]));
+        else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf)
+            MatPsi_obj->SCF_SetGuessOrb(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
+        else
+            mexErrMsgTxt("SCF_SetGuessOrb(occOrbAlpha, occOrbBeta): 1 or 2 nbf by any matrix(ces) input expected.");
         return;
     }
+    
+    
     if (!strcmp("SCF_RunSCF", cmd)) {
         OutputScalar(plhs[0], MatPsi_obj->SCF_RunSCF());
         return;
@@ -571,10 +563,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     if (!strcmp("SCF_DensityBeta", cmd)) {
         OutputMatrix(plhs[0], MatPsi_obj->SCF_DensityBeta());
-        return;
-    }
-    if (!strcmp("SCF_CoreHamiltonian", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->SCF_CoreHamiltonian());
         return;
     }
     if (!strcmp("SCF_FockAlpha", cmd)) {
