@@ -4,7 +4,8 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-mexext = $(shell mexext)
+matlabPath = `dirname $(MEX)`
+mexext = $(shell $(matlabPath)/mexext)
 PSITARGET = $(top_objdir)/MatPsi2/MatPsi2_mex.$(mexext)
 
 LDLIBS += $(LAPACK) $(BLAS) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread 
