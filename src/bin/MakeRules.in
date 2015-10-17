@@ -39,11 +39,11 @@ all: default
 	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
 
 %.$(OBJSUF): %.cpp
-	$(MEX) -c $< $(MEXFLAGS) $(CXXINCLUDE) $(OUTPUT_OPTION)
+	$(MEX) -c $< $(MEXFLAGS) $(CXXINCLUDE)
 
 ## link 
 $(PSITARGET): $(MEXOBJ) $(LIBOBJ) 
-	$(MEX) $< $(LIBOBJ) $(MEXFLAGS) $(LIBDIRS) $(START_EXPORT) $(PSILIBS) $(END_EXPORT) $(FILTEREDLDLIBS) $(CXXINCLUDE) 
+	$(MEX) $< $(LIBOBJ) $(MEXFLAGS) $(CXXINCLUDE) 
 	$(MKDIRS) `dirname $(PSITARGET)`
 	-cp $(top_srcdir)/@MatPsi2 `dirname $(PSITARGET)` -r
 	$(INSTALL) *.mex* `dirname $(PSITARGET)`/@MatPsi2
